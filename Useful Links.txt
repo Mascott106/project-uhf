@@ -1,0 +1,13 @@
+Useful Links 
+
+Shaka player
+https://github.com/shaka-project/shaka-player
+
+Hugo ssg
+https://github.com/gohugoio/hugo
+
+Embedding Shaka in hugo sites - just needs a little extra Js
+https://rybakov.com/blog/mpeg-dash/
+
+Apple Test m3u8
+https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8
