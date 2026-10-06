@@ -1,6 +1,6 @@
 baseURL = '/'
 locale = 'en-us'
-title = 'UHF'
+title = 'project uhf'
 disableKinds = ['taxonomy', 'term']
 
 # Shaka Player UI 5.2.12 is vendored in static/vendor/shaka/.
