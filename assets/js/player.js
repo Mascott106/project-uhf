@@ -45,7 +45,8 @@ async function initPlayer() {
       'quality',
       'language',
       'playback_rate',
-      'captions-settings',
+      'captions-position',
+      'captions-size',
     ],
   });
 
