@@ -56,8 +56,25 @@ async function initPlayer() {
 
   try {
     await player.load(manifestUrl);
+    await startPlayback(video);
   } catch (error) {
     showError(error);
+  }
+}
+
+async function startPlayback(video) {
+  try {
+    await video.play();
+  } catch (error) {
+    if (!error || error.name !== 'NotAllowedError') {
+      return;
+    }
+    video.muted = true;
+    try {
+      await video.play();
+    } catch (playError) {
+      // Leave the play button available when the browser still blocks playback.
+    }
   }
 }
 
