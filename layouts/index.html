@@ -1,0 +1,12 @@
+{{ define "main" }}
+<main>
+  <div
+    id="player"
+    class="player"
+    data-manifest-url="{{ .Site.Params.manifestUrl }}"
+    data-cast-receiver-app-id="{{ .Site.Params.castReceiverAppId }}">
+    <video id="video" playsinline></video>
+  </div>
+  <p id="player-error" class="player-error" hidden></p>
+</main>
+{{ end }}

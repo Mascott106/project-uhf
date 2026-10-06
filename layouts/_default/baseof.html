@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ .Site.Title }}</title>
+    <link rel="stylesheet" href="{{ "vendor/shaka/controls.css" | relURL }}">
+    <style>
+      html, body {
+        margin: 0;
+        background: #000;
+        color: #fff;
+        font-family: system-ui, sans-serif;
+      }
+
+      main {
+        box-sizing: border-box;
+        max-width: 60rem;
+        margin: 0 auto;
+        padding: 1rem;
+      }
+
+      .player {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        background: #000;
+      }
+
+      .player video {
+        width: 100%;
+        height: 100%;
+      }
+
+      .player-error {
+        margin: 0.75rem 0 0;
+        color: #f5c2c2;
+      }
+    </style>
+  </head>
+  <body>
+    {{ block "main" . }}{{ end }}
+    <script defer src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js"></script>
+    <script defer src="{{ "vendor/shaka/shaka-player.ui-es2021.js" | relURL }}"></script>
+    {{ $player := resources.Get "js/player.js" | minify | fingerprint }}
+    <script defer src="{{ $player.RelPermalink }}" integrity="{{ $player.Data.Integrity }}"></script>
+  </body>
+</html>
