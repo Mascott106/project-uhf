@@ -6,4 +6,6 @@ Right now it plays Apple’s public test stream. The point of the page is to pro
 
 WebVTT should also work in theory, which might be really fun because we could use a custom font.
 
+Stream settings live in `hugo.toml`, under `[params.player]`: the playlist URL, the app id for casting, and autoplay. The page title is the Hugo `title` above that, and the sentence under the heading is `description`. Change those there. The layout and player script only read them.
+
 `hugo server` serves it locally.
