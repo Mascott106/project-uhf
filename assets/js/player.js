@@ -12,10 +12,10 @@ function initApp() {
 }
 
 async function initPlayer() {
-  const container = document.getElementById('player');
   const video = document.getElementById('video');
-  const manifestUrl = container.dataset.manifestUrl;
-  const castReceiverAppId = container.dataset.castReceiverAppId;
+  const config = JSON.parse(document.getElementById('player-config').textContent);
+  const manifestUrl = config.manifestUrl;
+  const castReceiverAppId = config.castReceiverAppId;
 
   if (!manifestUrl) {
     showError('Could not load the video.');
@@ -25,7 +25,7 @@ async function initPlayer() {
   const player = new shaka.Player();
   await player.attach(video);
 
-  const ui = new shaka.ui.Overlay(player, container, video);
+  const ui = new shaka.ui.Overlay(player, document.getElementById('player'), video);
   ui.configure({
     addSeekBar: true,
     castReceiverAppId: castReceiverAppId,
@@ -56,7 +56,9 @@ async function initPlayer() {
 
   try {
     await player.load(manifestUrl);
-    await startPlayback(video);
+    if (config.autoplay) {
+      await startPlayback(video);
+    }
   } catch (error) {
     showError(error);
   }

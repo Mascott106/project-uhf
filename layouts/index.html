@@ -1,16 +1,15 @@
 {{ define "main" }}
 <main>
   <header>
-    <h1>project uhf</h1>
-    <p>A lightweight page for playing an HLS stream.</p>
+    <h1>{{ .Site.Title }}</h1>
+    <p>{{ .Site.Params.description }}</p>
   </header>
-  <div
-    id="player"
-    class="player"
-    data-manifest-url="{{ .Site.Params.manifestUrl }}"
-    data-cast-receiver-app-id="{{ .Site.Params.castReceiverAppId }}">
-    <video id="video" autoplay playsinline></video>
+  <div id="player" class="player">
+    <video id="video" playsinline{{ if .Site.Params.player.autoplay }} autoplay{{ end }}></video>
   </div>
   <p id="player-error" class="player-error" hidden></p>
+  <script id="player-config" type="application/json">
+    {{ dict "manifestUrl" .Site.Params.player.manifestUrl "castReceiverAppId" .Site.Params.player.castReceiverAppId "autoplay" .Site.Params.player.autoplay | jsonify | safeJS }}
+  </script>
 </main>
 {{ end }}

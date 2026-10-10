@@ -1,10 +1,19 @@
 baseURL = '/'
 locale = 'en-us'
+
+# Hugo. Read by layouts/_default/baseof.html (<title>) and layouts/index.html (the heading).
 title = 'project uhf'
 disableKinds = ['taxonomy', 'term']
 
 # Shaka Player UI 5.2.12 is vendored in static/vendor/shaka/.
 
 [params]
+  # Page copy. Read by layouts/index.html for the sentence under the heading.
+  description = 'A lightweight page for playing an HLS stream.'
+
+# Player. Read by layouts/index.html, which prints #player-config.
+# assets/js/player.js parses that block. Update these here.
+[params.player]
   manifestUrl = 'https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8'
   castReceiverAppId = '07AEE832'
+  autoplay = true
