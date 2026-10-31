@@ -4,12 +4,24 @@
     <h1>{{ .Site.Title }}</h1>
     <p>{{ .Site.Params.description }}</p>
   </header>
+  {{ $streams := .Site.Params.player.streams }}
+  {{ if and $streams (gt (len $streams) 1) }}
+  <div class="stream-list" role="radiogroup" aria-label="Streams">
+    {{ range $index, $stream := $streams }}
+    <button type="button" class="stream-option" role="radio" data-stream-id="{{ $stream.id }}" aria-checked="{{ if eq $index 0 }}true{{ else }}false{{ end }}">{{ $stream.label }}</button>
+    {{ end }}
+  </div>
+  {{ end }}
   <div id="player" class="player">
     <video id="video" playsinline{{ if .Site.Params.player.autoplay }} autoplay{{ end }}></video>
   </div>
   <p id="player-error" class="player-error" hidden></p>
   <script id="player-config" type="application/json">
-    {{ dict "manifestUrl" .Site.Params.player.manifestUrl "castReceiverAppId" .Site.Params.player.castReceiverAppId "autoplay" .Site.Params.player.autoplay | jsonify | safeJS }}
+    {{- $items := slice -}}
+    {{- range .Site.Params.player.streams -}}
+      {{- $items = $items | append (dict "id" .id "label" .label "manifestUrl" .manifestUrl) -}}
+    {{- end -}}
+    {{ dict "streams" $items "castReceiverAppId" .Site.Params.player.castReceiverAppId "autoplay" .Site.Params.player.autoplay | jsonify | safeJS }}
   </script>
 </main>
 {{ end }}

@@ -9,11 +9,21 @@ disableKinds = ['taxonomy', 'term']
 
 [params]
   # Page copy. Read by layouts/index.html for the sentence under the heading.
-  description = 'A lightweight page for playing an HLS stream.'
+  description = 'A lightweight page for playing HLS streams.'
 
 # Player. Read by layouts/index.html, which prints #player-config.
 # assets/js/player.js parses that block. Update these here.
+# Each stream is one choice on the page. The first one plays on load.
 [params.player]
-  manifestUrl = 'https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8'
   castReceiverAppId = '07AEE832'
   autoplay = true
+
+[[params.player.streams]]
+  id = 'bipbop'
+  label = 'Bipbop'
+  manifestUrl = 'https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8'
+
+[[params.player.streams]]
+  id = 'bunny'
+  label = 'Big Buck Bunny'
+  manifestUrl = 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8'
