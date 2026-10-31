@@ -77,6 +77,72 @@
         height: 100%;
       }
 
+      .channel-static {
+        position: absolute;
+        inset: 0;
+        z-index: 5;
+        overflow: hidden;
+        pointer-events: none;
+        background: #0c0c0c;
+      }
+
+      .channel-static canvas {
+        display: block;
+        width: 100%;
+        height: 106%;
+        image-rendering: pixelated;
+      }
+
+      .channel-static.is-on canvas {
+        animation: static-jitter 0.12s steps(2) infinite;
+      }
+
+      .channel-static.is-on {
+        animation: channel-hit 0.4s linear;
+      }
+
+      .channel-static::after {
+        content: "";
+        position: absolute;
+        inset: -8% 0;
+        background: repeating-linear-gradient(
+          to bottom,
+          rgba(0, 0, 0, 0.28) 0 1px,
+          transparent 1px 3px
+        );
+        animation: static-roll 0.14s linear infinite;
+      }
+
+      .channel-static.is-still canvas,
+      .channel-static.is-still::after {
+        visibility: hidden;
+      }
+
+      @keyframes static-jitter {
+        0% { transform: translateY(0); }
+        50% { transform: translateY(-1.5%); }
+        100% { transform: translateY(1%); }
+      }
+
+      @keyframes static-roll {
+        from { transform: translateY(0); }
+        to { transform: translateY(3px); }
+      }
+
+      @keyframes channel-hit {
+        0% { filter: contrast(1.5) brightness(2.4); }
+        14% { filter: contrast(1.1) brightness(1); }
+        100% { filter: none; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .channel-static.is-on,
+        .channel-static.is-on canvas,
+        .channel-static::after {
+          animation: none;
+        }
+      }
+
       .player-error {
         margin: 0.75rem 0 0;
         color: #f5c2c2;

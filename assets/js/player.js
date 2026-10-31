@@ -1,6 +1,10 @@
 document.addEventListener('DOMContentLoaded', initApp);
 
 let loadToken = 0;
+let channelStatic = null;
+
+const STATIC_MIN_MS = 680;
+const STATIC_MIN_REDUCED_MS = 220;
 
 function initApp() {
   shaka.polyfill.installAll();
@@ -59,6 +63,8 @@ async function initPlayer() {
     showError(event.detail);
   });
 
+  channelStatic = createChannelStatic(document.getElementById('channel-static'));
+
   let selectedId = streams[0].id;
   const picker = document.querySelector('.stream-list');
 
@@ -69,7 +75,7 @@ async function initPlayer() {
       }
       selectedId = id;
       markSelected(picker, id);
-      loadStream(player, video, streams, id, config.autoplay);
+      loadStream(player, video, streams, id, config.autoplay, true);
     };
 
     picker.addEventListener('click', (event) => {
@@ -105,13 +111,21 @@ async function initPlayer() {
   await loadStream(player, video, streams, selectedId, config.autoplay);
 }
 
-async function loadStream(player, video, streams, id, autoplay) {
+async function loadStream(player, video, streams, id, autoplay, withStatic) {
   const token = ++loadToken;
   const stream = streams.find((item) => item.id === id);
 
   if (!stream || !stream.manifestUrl) {
     showError('Could not load the video.');
+    if (withStatic) {
+      channelStatic.hide();
+    }
     return;
+  }
+
+  if (withStatic) {
+    video.pause();
+    channelStatic.show();
   }
 
   try {
@@ -123,12 +137,150 @@ async function loadStream(player, video, streams, id, autoplay) {
     if (autoplay) {
       await startPlayback(video);
     }
+    if (token !== loadToken) {
+      return;
+    }
+    if (withStatic) {
+      await channelStatic.finish(token, video);
+    }
   } catch (error) {
     if (token !== loadToken || isStaleLoadError(error)) {
       return;
     }
     showError(error);
+    if (withStatic) {
+      channelStatic.hide();
+    }
   }
+}
+
+function createChannelStatic(overlay) {
+  const canvas = overlay.querySelector('canvas');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const ctx = canvas.getContext('2d', { alpha: false });
+  let running = false;
+  let frame = 0;
+  let frameToken = 0;
+  let shownAt = 0;
+
+  function draw(token) {
+    if (!running || token !== frameToken) {
+      return;
+    }
+
+    const bounds = overlay.getBoundingClientRect();
+    const width = Math.max(2, Math.round(bounds.width / 6));
+    const height = Math.max(2, Math.round(bounds.height / 6));
+    if (canvas.width !== width || canvas.height !== height) {
+      canvas.width = width;
+      canvas.height = height;
+    }
+
+    const image = ctx.createImageData(width, height);
+    const data = image.data;
+    for (let i = 0; i < data.length; i += 4) {
+      const snow = Math.random() < 0.5
+        ? (Math.random() * 70) | 0
+        : 150 + ((Math.random() * 105) | 0);
+      data[i] = snow;
+      data[i + 1] = snow;
+      data[i + 2] = snow;
+      data[i + 3] = 255;
+    }
+
+    const band = (frame * 3) % height;
+    const bandHeight = Math.max(2, (height / 8) | 0);
+    for (let y = band; y < band + bandHeight && y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const pixel = (y * width + x) * 4;
+        const bright = 200 + ((Math.random() * 55) | 0);
+        data[pixel] = bright;
+        data[pixel + 1] = bright;
+        data[pixel + 2] = bright;
+      }
+    }
+
+    ctx.putImageData(image, 0, 0);
+    frame += 1;
+    requestAnimationFrame(() => draw(token));
+  }
+
+  return {
+    show() {
+      shownAt = performance.now();
+      overlay.hidden = false;
+      overlay.classList.remove('is-on');
+      void overlay.offsetWidth;
+      overlay.classList.toggle('is-still', reduceMotion);
+      overlay.classList.add('is-on');
+      if (reduceMotion || running) {
+        return;
+      }
+      running = true;
+      const token = ++frameToken;
+      requestAnimationFrame(() => draw(token));
+    },
+
+    async finish(token, video) {
+      const startedAt = shownAt;
+      await waitForPicture(video, token);
+      if (token !== loadToken) {
+        return;
+      }
+      const minMs = reduceMotion ? STATIC_MIN_REDUCED_MS : STATIC_MIN_MS;
+      const remaining = minMs - (performance.now() - startedAt);
+      if (remaining > 0) {
+        await sleep(remaining);
+      }
+      if (token !== loadToken) {
+        return;
+      }
+      this.hide();
+    },
+
+    hide() {
+      running = false;
+      frameToken += 1;
+      overlay.classList.remove('is-on', 'is-still');
+      overlay.hidden = true;
+    },
+  };
+}
+
+function waitForPicture(video, token) {
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = () => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      video.removeEventListener('loadeddata', onReady);
+      video.removeEventListener('playing', onReady);
+      clearTimeout(timer);
+      resolve();
+    };
+    const onReady = () => {
+      if (token !== loadToken || video.readyState >= 2) {
+        finish();
+      }
+    };
+    const timer = setTimeout(finish, 4000);
+    video.addEventListener('loadeddata', onReady);
+    video.addEventListener('playing', onReady);
+    if (typeof video.requestVideoFrameCallback === 'function') {
+      video.requestVideoFrameCallback(() => finish());
+    } else if (video.readyState >= 2) {
+      requestAnimationFrame(() => requestAnimationFrame(finish));
+    }
+    if (video.readyState >= 2 && video.paused) {
+      requestAnimationFrame(finish);
+    }
+  });
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function markSelected(picker, id) {
