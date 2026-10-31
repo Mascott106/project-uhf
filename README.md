@@ -6,7 +6,7 @@ Right now the list has Apple’s public test stream with embedded captions, Big 
 
 ## Config
 
-Stream settings live in `hugo.toml`, under `[params.player]`: a list of streams (each with an id, a label, and a playlist URL), the app id for casting, and autoplay. The page title is the Hugo `title` above that, and the sentence under the heading is `description`. Change those there. The layout and player script only read them.
+Everything is intended to be configured in one place, so all stream and page settings live in `hugo.toml`, under `[params.player]`: a list of streams (each with an id, a label, and a playlist URL), the app id for casting, autoplay, and `captionFont`. That last one is the WebVTT font file in `static/fonts`, without the extension. Leave it blank for no custom font. The page title is the Hugo `title` above that, and the sentence under the heading is `description`. Change those there. The layout and player script only read them.
 
 `hugo server` serves it locally.
 
