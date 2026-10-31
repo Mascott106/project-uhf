@@ -77,6 +77,16 @@
         height: 100%;
       }
 
+      @font-face {
+        font-family: "Return";
+        src: url("{{ "fonts/Return.woff2" | relURL }}") format("woff2");
+        font-display: swap;
+      }
+
+      .shaka-text-container {
+        font-family: "Return", sans-serif;
+      }
+
       .channel-static {
         position: absolute;
         inset: 0;
