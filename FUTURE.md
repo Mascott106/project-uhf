@@ -7,6 +7,8 @@ A few of the earlier ideas from here are now implemented in the page.
 - A separate text track can use a custom font (`captionFont`). The embedded CEA-608 and CEA-708 captions stick with the player's own font. 
 - Chromecast has been tried, and playback works there.
 
+Casting opens Shaka's public receiver, so their logo shows on the TV until the video starts. The page cannot swap that image. If the organization wants its own, someone has to register a Cast receiver and host a copy of that app. If not, the public receiver is enough and can stay.
+
 Next up is a stream we actually host. One short video, packaged as HLS, in a public S3 folder. The page already plays whatever playlist you give it, so this is just another row in the list.
 
 AirPlay functionality still needs to be validated.
