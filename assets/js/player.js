@@ -268,13 +268,19 @@ function waitForPicture(video, token) {
     const timer = setTimeout(finish, 4000);
     video.addEventListener('loadeddata', onReady);
     video.addEventListener('playing', onReady);
-    if (typeof video.requestVideoFrameCallback === 'function') {
-      video.requestVideoFrameCallback(() => finish());
-    } else if (video.readyState >= 2) {
-      requestAnimationFrame(() => requestAnimationFrame(finish));
-    }
+
     if (video.readyState >= 2 && video.paused) {
       requestAnimationFrame(finish);
+      return;
+    }
+
+    if (typeof video.requestVideoFrameCallback === 'function') {
+      video.requestVideoFrameCallback(() => finish());
+      return;
+    }
+
+    if (video.readyState >= 2) {
+      requestAnimationFrame(() => requestAnimationFrame(finish));
     }
   });
 }
