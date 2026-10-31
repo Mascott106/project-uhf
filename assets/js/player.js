@@ -33,9 +33,19 @@ async function initPlayer() {
 
   const ui = new shaka.ui.Overlay(player, document.getElementById('player'), video);
   const controls = ui.getControls();
-  // A reload drops this page, but the TV keeps playing. Stop the session
-  // so the next cast is the only one on that device.
-  window.addEventListener('pagehide', () => {
+  const playerEl = document.getElementById('player');
+  // Closing the tab or the laptop leaves the TV playing. A new visit joins
+  // that leftover session on its own, so stop it unless this page started it.
+  let castFromHere = false;
+  playerEl.addEventListener('click', (event) => {
+    if (event.target.closest('.shaka-cast-button')) {
+      castFromHere = true;
+    }
+  }, true);
+  controls.addEventListener('caststatuschanged', () => {
+    if (castFromHere) {
+      return;
+    }
     const proxy = controls.getCastProxy();
     if (proxy && proxy.isCasting()) {
       proxy.forceDisconnect();
