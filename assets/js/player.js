@@ -32,6 +32,15 @@ async function initPlayer() {
   await player.attach(video);
 
   const ui = new shaka.ui.Overlay(player, document.getElementById('player'), video);
+  const controls = ui.getControls();
+  // A reload drops this page, but the TV keeps playing. Stop the session
+  // so the next cast is the only one on that device.
+  window.addEventListener('pagehide', () => {
+    const proxy = controls.getCastProxy();
+    if (proxy && proxy.isCasting()) {
+      proxy.forceDisconnect();
+    }
+  });
   ui.configure({
     addSeekBar: true,
     castReceiverAppId: castReceiverAppId,
@@ -56,7 +65,7 @@ async function initPlayer() {
     ],
   });
 
-  player.addEventListener('error', (event) => {
+  controls.getPlayer().addEventListener('error', (event) => {
     if (isStaleLoadError(event.detail)) {
       return;
     }
@@ -75,7 +84,7 @@ async function initPlayer() {
       }
       selectedId = id;
       markSelected(picker, id);
-      loadStream(player, video, streams, id, config.autoplay, true);
+      loadStream(player, video, streams, id, config.autoplay, true, controls);
     };
 
     picker.addEventListener('click', (event) => {
@@ -108,12 +117,13 @@ async function initPlayer() {
     });
   }
 
-  await loadStream(player, video, streams, selectedId, config.autoplay);
+  await loadStream(player, video, streams, selectedId, config.autoplay, false, controls);
 }
 
-async function loadStream(player, video, streams, id, autoplay, withStatic) {
+async function loadStream(player, video, streams, id, autoplay, withStatic, controls) {
   const token = ++loadToken;
   const stream = streams.find((item) => item.id === id);
+  const casting = isCasting(controls);
 
   if (!stream || !stream.manifestUrl) {
     showError('Could not load the video.');
@@ -123,24 +133,38 @@ async function loadStream(player, video, streams, id, autoplay, withStatic) {
     return;
   }
 
-  if (withStatic) {
+  if (casting) {
+    // The browser video is only a local copy. Pause it so a switch cannot
+    // start a second stream here while the TV keeps the old one.
+    video.pause();
+    if (player.getAssetUri()) {
+      await player.unload();
+    }
+    if (token !== loadToken) {
+      return;
+    }
+  } else if (withStatic) {
     video.pause();
     channelStatic.show(stream.label);
   }
 
   try {
-    await player.load(stream.manifestUrl);
+    await controls.getPlayer().load(stream.manifestUrl);
     if (token !== loadToken) {
       return;
     }
     hideError();
     if (autoplay) {
-      await startPlayback(video);
+      if (casting) {
+        await controls.getVideo().play();
+      } else {
+        await startPlayback(video);
+      }
     }
     if (token !== loadToken) {
       return;
     }
-    if (withStatic) {
+    if (withStatic && !casting) {
       await channelStatic.finish(token, video);
     }
   } catch (error) {
@@ -152,6 +176,11 @@ async function loadStream(player, video, streams, id, autoplay, withStatic) {
       channelStatic.hide();
     }
   }
+}
+
+function isCasting(controls) {
+  const proxy = controls && controls.getCastProxy();
+  return !!(proxy && proxy.isCasting());
 }
 
 function createChannelStatic(overlay) {
