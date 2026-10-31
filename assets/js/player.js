@@ -125,7 +125,7 @@ async function loadStream(player, video, streams, id, autoplay, withStatic) {
 
   if (withStatic) {
     video.pause();
-    channelStatic.show();
+    channelStatic.show(stream.label);
   }
 
   try {
@@ -206,7 +206,11 @@ function createChannelStatic(overlay) {
   }
 
   return {
-    show() {
+    show(label) {
+      const name = overlay.querySelector('.channel-name');
+      if (name) {
+        name.textContent = label || '';
+      }
       shownAt = performance.now();
       overlay.hidden = false;
       overlay.classList.remove('is-on');
