@@ -77,15 +77,17 @@
         height: 100%;
       }
 
+      {{ with .Site.Params.player.captionFont }}
       @font-face {
-        font-family: "Return";
-        src: url("{{ "fonts/Return.woff2" | relURL }}") format("woff2");
+        font-family: "{{ . }}";
+        src: url("{{ printf "fonts/%s.woff2" . | relURL }}") format("woff2");
         font-display: swap;
       }
 
       .shaka-text-container {
-        font-family: "Return", sans-serif;
+        font-family: "{{ . }}", sans-serif;
       }
+      {{ end }}
 
       .channel-static {
         position: absolute;

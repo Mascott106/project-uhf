@@ -14,9 +14,12 @@ disableKinds = ['taxonomy', 'term']
 # Player. Read by layouts/index.html, which prints #player-config.
 # assets/js/player.js parses that block. Update these here.
 # Each stream is one choice on the page. The first one plays on load.
+# captionFont is the WebVTT face. layouts/_default/baseof.html reads it.
+# The file is static/fonts/<captionFont>.woff2. Leave it blank for no custom font.
 [params.player]
   castReceiverAppId = '07AEE832'
   autoplay = true
+  captionFont = 'Return'
 
 [[params.player.streams]]
   id = 'bipbop'
